@@ -12,14 +12,14 @@ import { Phone, MapPin, Clock, Mail, ExternalLink } from 'lucide-react';
 export default function ContactDisplay({ darkMode = false }) {
   // Contact information for FitMood
   const contactInfo = {
-    phone: '+1 (555) 123-4567',
-    email: 'support@fitmood.app',
+    phone: '+91 9582820711',
+    email: 'fitmood55@gmail.com',
     address: {
-      street: '123 Wellness Street',
-      city: 'Health City',
-      state: 'CA',
-      zipCode: '90210',
-      country: 'USA'
+      street: 'B Block',
+      city: 'Padam Nagar',
+      state: 'Delhi ',
+      zipCode: '1110007',
+      country: 'INDIA'
     },
     businessHours: 'Monday - Friday: 9:00 AM - 6:00 PM PST'
   };
