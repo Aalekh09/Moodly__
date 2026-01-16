@@ -1296,7 +1296,7 @@ function HomePage({ currentUser, moodHistory, loadUserData, userStats, darkMode,
                       minute: '2-digit'
                     })}
                   </div>
-                  {mood.triggers && (
+                  {mood.triggers && mood.triggers.trim() && (
                     <div className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
                       Triggers: {mood.triggers}
                     </div>
@@ -2441,9 +2441,9 @@ function AdminPage({ currentUser, allUsers, setAllUsers, darkMode }) {
   // Filter and sort users
   const filteredUsers = allUsers
     .filter(user => {
-      const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           user.phone.includes(searchTerm);
+      const matchesSearch = user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           (user.phone && user.phone.toString().includes(searchTerm));
       const matchesRole = filterRole === 'all' || user.role === filterRole;
       return matchesSearch && matchesRole;
     })
@@ -2573,7 +2573,7 @@ function AdminPage({ currentUser, allUsers, setAllUsers, darkMode }) {
               </h2>
               <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                 <span>{userDetails.user.email}</span>
-                <span>{userDetails.user.phone}</span>
+                {userDetails.user.phone && <span>{userDetails.user.phone}</span>}
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                   userDetails.user.role === 'admin' 
                     ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
@@ -2689,7 +2689,7 @@ function AdminPage({ currentUser, allUsers, setAllUsers, darkMode }) {
                   </div>
                   <div>
                     <span className="text-gray-600 dark:text-gray-400">Phone:</span>{' '}
-                    <span className="font-medium text-gray-900 dark:text-white">{userDetails.user.phone}</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{userDetails.user.phone || 'Not provided'}</span>
                   </div>
                 </div>
                 <div className="space-y-3">
@@ -2740,12 +2740,17 @@ function AdminPage({ currentUser, allUsers, setAllUsers, darkMode }) {
                       <div className="text-sm text-gray-500 dark:text-gray-400">
                         {new Date(mood.timestamp).toLocaleString()}
                       </div>
-                      {mood.activities && (
+                      {mood.activities && Array.isArray(mood.activities) && mood.activities.length > 0 && (
                         <div className="text-xs text-green-600 dark:text-green-400 mt-1">
-                          Activities: {Array.isArray(mood.activities) ? mood.activities.join(', ') : mood.activities}
+                          Activities: {mood.activities.join(', ')}
                         </div>
                       )}
-                      {mood.triggers && (
+                      {mood.activities && typeof mood.activities === 'string' && mood.activities.trim() && (
+                        <div className="text-xs text-green-600 dark:text-green-400 mt-1">
+                          Activities: {mood.activities}
+                        </div>
+                      )}
+                      {mood.triggers && mood.triggers.trim() && (
                         <div className="text-xs text-red-600 dark:text-red-400 mt-1">
                           Triggers: {mood.triggers}
                         </div>
@@ -2984,7 +2989,7 @@ function AdminPage({ currentUser, allUsers, setAllUsers, darkMode }) {
                 <div className="mt-3 text-xs md:text-sm text-gray-500 dark:text-gray-400 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                   <span className="flex items-center gap-1">📅 Joined: {new Date(user.createdAt).toLocaleDateString()}</span>
                   <span className="flex items-center gap-1">🕒 Last Active: {user.lastActive ? new Date(user.lastActive).toLocaleDateString() : 'Never'}</span>
-                  <span className="flex items-center gap-1">📱 {user.phone}</span>
+                  {user.phone && <span className="flex items-center gap-1">📱 {user.phone}</span>}
                 </div>
               </div>
             ))}
