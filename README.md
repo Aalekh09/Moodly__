@@ -34,6 +34,13 @@ A beautiful, feature-rich Progressive Web App (PWA) for tracking your daily mood
 - IndexedDB for local storage
 - Queue system for pending API calls
 
+### 📱 **PWA Optimized Navigation**
+- Horizontal scrollable navigation bar for mobile devices
+- Touch-friendly interface optimized for PWA installation
+- Smooth scrolling with visual scroll indicators
+- Responsive design that adapts to all screen sizes
+- Admin panel accessible via swipe/scroll on mobile
+
 ### 🔔 **Push Notifications**
 - Daily mood check-in reminders
 - Customizable reminder times
@@ -237,6 +244,11 @@ colors: {
 3. Update components as needed
 
 ## 🐛 Troubleshooting
+
+### PWA Navigation Issues
+- **Admin button not visible**: Swipe/scroll the navigation bar to the right to access the Admin button
+- **Navigation feels cramped**: The navigation bar is horizontally scrollable - swipe left/right to see all options
+- **Scroll not working on PWA**: Ensure you're using the latest version of the app and try reinstalling the PWA
 
 ### Offline Mode Not Working
 - Ensure IndexedDB is supported in your browser

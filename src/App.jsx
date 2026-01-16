@@ -234,7 +234,7 @@ function FitMoodApp() {
   }
 
   return (
-    <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200`}>
+    <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200 overflow-x-hidden`}>
       {/* Password Setup Prompt */}
       {needsPasswordSetup && <PasswordSetupPrompt />}
       
@@ -1135,22 +1135,22 @@ function HomePage({ currentUser, moodHistory, loadUserData, userStats, darkMode,
   };
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
+    <div className="p-3 sm:p-4 max-w-4xl mx-auto">
       {/* Enhanced Header */}
-      <div className={`bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 dark:from-indigo-600 dark:via-purple-600 dark:to-pink-600 rounded-3xl p-6 text-white mb-6 shadow-xl`}>
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <h1 className="text-3xl font-bold mb-1">Hello, {currentUser?.name}! 👋</h1>
-            <p className="text-white/90 text-sm">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+      <div className={`bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 dark:from-indigo-600 dark:via-purple-600 dark:to-pink-600 rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-white mb-4 sm:mb-6 shadow-xl`}>
+        <div className="flex items-center justify-between mb-2 gap-2">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 truncate">Hello, {currentUser?.name}! 👋</h1>
+            <p className="text-white/90 text-xs sm:text-sm">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
           </div>
           {currentStreak() > 0 && (
-            <div className="text-center bg-white/20 rounded-xl px-4 py-2">
-              <div className="text-2xl font-bold">{currentStreak()}</div>
-              <div className="text-xs">Day Streak 🔥</div>
+            <div className="text-center bg-white/20 rounded-xl px-3 sm:px-4 py-2 flex-shrink-0">
+              <div className="text-xl sm:text-2xl font-bold">{currentStreak()}</div>
+              <div className="text-[10px] sm:text-xs whitespace-nowrap">Day Streak 🔥</div>
             </div>
           )}
         </div>
-        <p className="text-white/90 mt-2">How are you feeling today?</p>
+        <p className="text-white/90 mt-2 text-sm sm:text-base">How are you feeling today?</p>
       </div>
 
       {!showMoodEntry ? (
@@ -1181,17 +1181,17 @@ function HomePage({ currentUser, moodHistory, loadUserData, userStats, darkMode,
       )}
 
       {/* Enhanced Stats Grid */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 border border-gray-100 dark:border-gray-700">
-          <div className="text-indigo-600 dark:text-indigo-400 mb-2"><Activity size={24} /></div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">{userStats?.totalEntries || 0}</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Total Entries</div>
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 border border-gray-100 dark:border-gray-700">
+          <div className="text-indigo-600 dark:text-indigo-400 mb-2"><Activity size={20} className="sm:w-6 sm:h-6" /></div>
+          <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{userStats?.totalEntries || 0}</div>
+          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Total Entries</div>
         </div>
         
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 border border-gray-100 dark:border-gray-700">
-          <div className="text-purple-600 dark:text-purple-400 mb-2"><TrendingUp size={24} /></div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">{userStats?.avgMood ? userStats.avgMood.toFixed(1) : '0.0'}</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Average Mood</div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 border border-gray-100 dark:border-gray-700">
+          <div className="text-purple-600 dark:text-purple-400 mb-2"><TrendingUp size={20} className="sm:w-6 sm:h-6" /></div>
+          <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{userStats?.avgMood ? userStats.avgMood.toFixed(1) : '0.0'}</div>
+          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Average Mood</div>
         </div>
       </div>
 
@@ -1463,19 +1463,19 @@ function MoodEntryForm({ currentUser, onClose, onSuccess }) {
           </div>
         )}
 
-        <div className="flex justify-between gap-2">
+        <div className="flex justify-between gap-1 sm:gap-2">
           {customEmojis.map((emoji, idx) => (
             <button
               key={idx}
               onClick={() => setMoodLevel(idx + 1)}
-              className={`flex-1 p-4 rounded-xl transition ${
+              className={`flex-1 p-2 sm:p-4 rounded-xl transition ${
                 moodLevel === idx + 1
                   ? 'bg-indigo-500 dark:bg-indigo-600 text-white shadow-lg scale-105'
                   : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
-              <div className="text-3xl mb-1">{emoji}</div>
-              <div className="text-xs text-gray-700 dark:text-gray-300">{moodLabels[idx]}</div>
+              <div className="text-2xl sm:text-3xl mb-1">{emoji}</div>
+              <div className="text-[10px] sm:text-xs text-gray-700 dark:text-gray-300">{moodLabels[idx]}</div>
             </button>
           ))}
         </div>
@@ -1565,23 +1565,23 @@ function AnalyticsPage({ userStats, moodHistory, darkMode }) {
   const COLORS = ['#ef4444', '#f59e0b', '#eab308', '#22c55e', '#3b82f6'];
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Your Analytics</h2>
+    <div className="p-3 sm:p-4 max-w-4xl mx-auto">
+      <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-900 dark:text-white">Your Analytics</h2>
 
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-4 text-white">
-          <div className="text-3xl font-bold">{userStats.totalEntries || 0}</div>
-          <div className="text-sm opacity-90">Total Entries</div>
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 text-white">
+          <div className="text-2xl sm:text-3xl font-bold">{userStats.totalEntries || 0}</div>
+          <div className="text-xs sm:text-sm opacity-90">Total Entries</div>
         </div>
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg p-4 text-white">
-          <div className="text-3xl font-bold">{userStats.avgMood ? userStats.avgMood.toFixed(1) : '0.0'}</div>
-          <div className="text-sm opacity-90">Average Mood</div>
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 text-white">
+          <div className="text-2xl sm:text-3xl font-bold">{userStats.avgMood ? userStats.avgMood.toFixed(1) : '0.0'}</div>
+          <div className="text-xs sm:text-sm opacity-90">Average Mood</div>
         </div>
       </div>
 
       {/* Enhanced Line Chart */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6 border border-gray-100 dark:border-gray-700">
-        <h3 className="font-semibold text-lg mb-4 text-gray-900 dark:text-white">Mood Trend (Last 30 Days)</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-100 dark:border-gray-700">
+        <h3 className="font-semibold text-base sm:text-lg mb-3 sm:mb-4 text-gray-900 dark:text-white">Mood Trend (Last 30 Days)</h3>
         <ResponsiveContainer width="100%" height={250}>
           <AreaChart data={chartData}>
             <defs>
@@ -1613,8 +1613,8 @@ function AnalyticsPage({ userStats, moodHistory, darkMode }) {
       </div>
 
       {/* Weekly Trend */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6 border border-gray-100 dark:border-gray-700">
-        <h3 className="font-semibold text-lg mb-4 text-gray-900 dark:text-white">Weekly Trend</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-100 dark:border-gray-700">
+        <h3 className="font-semibold text-base sm:text-lg mb-3 sm:mb-4 text-gray-900 dark:text-white">Weekly Trend</h3>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={weeklyData}>
             <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#374151' : '#e5e7eb'} />
@@ -1633,8 +1633,8 @@ function AnalyticsPage({ userStats, moodHistory, darkMode }) {
       </div>
 
       {/* Mood Distribution Pie Chart */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6 border border-gray-100 dark:border-gray-700">
-        <h3 className="font-semibold text-lg mb-4 text-gray-900 dark:text-white">Mood Distribution</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-100 dark:border-gray-700">
+        <h3 className="font-semibold text-base sm:text-lg mb-3 sm:mb-4 text-gray-900 dark:text-white">Mood Distribution</h3>
         <ResponsiveContainer width="100%" height={250}>
           <PieChart>
             <Pie
@@ -2041,15 +2041,15 @@ function LandingPage({ setCurrentPage }) {
           </div>
 
           {/* Title */}
-          <h1 className="text-7xl md:text-8xl font-bold text-white mb-6 animate-fade-in-up">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white mb-6 animate-fade-in-up">
             FitMood
           </h1>
 
           {/* Subtitle */}
-          <p className="text-2xl md:text-3xl text-white/90 mb-4 font-light animate-fade-in-up-delay">
+          <p className="text-xl sm:text-2xl md:text-3xl text-white/90 mb-4 font-light animate-fade-in-up-delay px-4">
             Track Your Emotions, Improve Your Life
           </p>
-          <p className="text-lg md:text-xl text-white/80 mb-12 max-w-2xl mx-auto animate-fade-in-up-delay-2">
+          <p className="text-base sm:text-lg md:text-xl text-white/80 mb-12 max-w-2xl mx-auto animate-fade-in-up-delay-2 px-4">
             Your personal mood tracking companion. Understand your emotions, build better habits, and enhance your mental well-being.
           </p>
 
@@ -2833,55 +2833,55 @@ function AdminPage({ currentUser, allUsers, setAllUsers, darkMode }) {
   }
 
   return (
-    <div className="p-4 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Admin Dashboard</h1>
-        <p className="text-gray-600 dark:text-gray-400">Manage users and monitor app activity</p>
+    <div className="p-3 md:p-4 max-w-7xl mx-auto">
+      <div className="mb-4 md:mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">Admin Dashboard</h1>
+        <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">Manage users and monitor app activity</p>
       </div>
 
       {/* Dashboard Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-4 text-white">
-          <div className="text-3xl font-bold">{allUsers.length}</div>
-          <div className="text-sm opacity-90">Total Users</div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl md:rounded-2xl shadow-lg p-3 md:p-4 text-white">
+          <div className="text-2xl md:text-3xl font-bold">{allUsers.length}</div>
+          <div className="text-xs md:text-sm opacity-90">Total Users</div>
         </div>
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg p-4 text-white">
-          <div className="text-3xl font-bold">
+        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl md:rounded-2xl shadow-lg p-3 md:p-4 text-white">
+          <div className="text-2xl md:text-3xl font-bold">
             {allUsers.filter(u => u.role === 'admin').length}
           </div>
-          <div className="text-sm opacity-90">Admins</div>
+          <div className="text-xs md:text-sm opacity-90">Admins</div>
         </div>
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg p-4 text-white">
-          <div className="text-3xl font-bold">
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl md:rounded-2xl shadow-lg p-3 md:p-4 text-white">
+          <div className="text-2xl md:text-3xl font-bold">
             {allUsers.filter(u => u.hasPassword).length}
           </div>
-          <div className="text-sm opacity-90">With Passwords</div>
+          <div className="text-xs md:text-sm opacity-90">With Passwords</div>
         </div>
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-lg p-4 text-white">
-          <div className="text-3xl font-bold">
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl md:rounded-2xl shadow-lg p-3 md:p-4 text-white">
+          <div className="text-2xl md:text-3xl font-bold">
             {allUsers.filter(u => u.migrationStatus === 'completed').length}
           </div>
-          <div className="text-sm opacity-90">Migrated</div>
+          <div className="text-xs md:text-sm opacity-90">Migrated</div>
         </div>
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6 border border-gray-100 dark:border-gray-700">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 md:p-6 mb-6 border border-gray-100 dark:border-gray-700">
+        <div className="flex flex-col gap-3">
+          <div className="w-full">
             <input
               type="text"
               placeholder="Search users by name, email, or phone..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm md:text-base"
             />
           </div>
           <div className="flex gap-2">
             <select
               value={filterRole}
               onChange={(e) => setFilterRole(e.target.value)}
-              className="p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="flex-1 p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm md:text-base"
             >
               <option value="all">All Roles</option>
               <option value="user">Users</option>
@@ -2890,7 +2890,7 @@ function AdminPage({ currentUser, allUsers, setAllUsers, darkMode }) {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="flex-1 p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm md:text-base"
             >
               <option value="name">Sort by Name</option>
               <option value="email">Sort by Email</option>
@@ -2922,16 +2922,16 @@ function AdminPage({ currentUser, allUsers, setAllUsers, darkMode }) {
         ) : (
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {filteredUsers.map((user) => (
-              <div key={user.userId} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+              <div key={user.userId} className="p-4 md:p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+                    <div className="w-12 h-12 flex-shrink-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
                       {user.name.charAt(0).toUpperCase()}
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">{user.name}</h3>
-                      <p className="text-gray-600 dark:text-gray-400">{user.email}</p>
-                      <div className="flex items-center gap-2 mt-1">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-gray-900 dark:text-white truncate">{user.name}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{user.email}</p>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           user.role === 'admin' 
                             ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
@@ -2952,12 +2952,12 @@ function AdminPage({ currentUser, allUsers, setAllUsers, darkMode }) {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <button
                       onClick={() => viewUserDetails(user.userId)}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
+                      className="flex-1 md:flex-none px-3 md:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs md:text-sm transition-colors whitespace-nowrap"
                     >
-                      👁️ View Details
+                      👁️ <span className="hidden sm:inline">View Details</span><span className="sm:hidden">View</span>
                     </button>
                     <button
                       onClick={() => {
@@ -2965,9 +2965,9 @@ function AdminPage({ currentUser, allUsers, setAllUsers, darkMode }) {
                         setActionType('message');
                         setShowUserModal(true);
                       }}
-                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-colors"
+                      className="flex-1 md:flex-none px-3 md:px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs md:text-sm transition-colors whitespace-nowrap"
                     >
-                      📧 Message
+                      📧 <span className="hidden sm:inline">Message</span><span className="sm:hidden">Msg</span>
                     </button>
                     <button
                       onClick={() => {
@@ -2975,16 +2975,16 @@ function AdminPage({ currentUser, allUsers, setAllUsers, darkMode }) {
                         setActionType('role');
                         setShowUserModal(true);
                       }}
-                      className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm transition-colors"
+                      className="flex-1 md:flex-none px-3 md:px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs md:text-sm transition-colors whitespace-nowrap"
                     >
-                      👑 Role
+                      👑 <span className="hidden sm:inline">Role</span>
                     </button>
                   </div>
                 </div>
-                <div className="mt-3 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-4">
-                  <span>📅 Joined: {new Date(user.createdAt).toLocaleDateString()}</span>
-                  <span>🕒 Last Active: {user.lastActive ? new Date(user.lastActive).toLocaleDateString() : 'Never'}</span>
-                  <span>📱 {user.phone}</span>
+                <div className="mt-3 text-xs md:text-sm text-gray-500 dark:text-gray-400 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                  <span className="flex items-center gap-1">📅 Joined: {new Date(user.createdAt).toLocaleDateString()}</span>
+                  <span className="flex items-center gap-1">🕒 Last Active: {user.lastActive ? new Date(user.lastActive).toLocaleDateString() : 'Never'}</span>
+                  <span className="flex items-center gap-1">📱 {user.phone}</span>
                 </div>
               </div>
             ))}
@@ -3101,33 +3101,41 @@ function Navigation({ currentUser, currentPage, setCurrentPage, darkMode, toggle
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50">
-      <div className="max-w-4xl mx-auto flex justify-around py-2">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = currentPage === item.id;
+      {/* Scrollable container for navigation items */}
+      <div className="relative">
+        {/* Scroll hint gradient on right side */}
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-gray-800 to-transparent pointer-events-none z-10"></div>
+        
+        <div className="overflow-x-auto overflow-y-hidden scrollbar-hide">
+          <div className="max-w-4xl mx-auto flex py-2 px-2 min-w-max">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentPage === item.id;
 
-          return (
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setCurrentPage(item.id)}
+                  className={`flex flex-col items-center py-2 px-3 sm:px-4 rounded-xl transition flex-shrink-0 ${
+                    isActive
+                      ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400'
+                  }`}
+                >
+                  <Icon size={24} />
+                  <span className="text-xs mt-1 whitespace-nowrap">{item.label}</span>
+                </button>
+              );
+            })}
             <button
-              key={item.id}
-              onClick={() => setCurrentPage(item.id)}
-              className={`flex flex-col items-center py-2 px-4 rounded-xl transition ${
-                isActive
-                  ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400'
-              }`}
+              onClick={toggleDarkMode}
+              className="flex flex-col items-center py-2 px-3 sm:px-4 rounded-xl transition text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 flex-shrink-0"
             >
-              <Icon size={24} />
-              <span className="text-xs mt-1">{item.label}</span>
+              {darkMode ? <Sun size={24} /> : <Moon size={24} />}
+              <span className="text-xs mt-1 whitespace-nowrap">Theme</span>
             </button>
-          );
-        })}
-        <button
-          onClick={toggleDarkMode}
-          className="flex flex-col items-center py-2 px-4 rounded-xl transition text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400"
-        >
-          {darkMode ? <Sun size={24} /> : <Moon size={24} />}
-          <span className="text-xs mt-1">Theme</span>
-        </button>
+          </div>
+        </div>
       </div>
       {!isOnline && (
         <div className="absolute top-0 left-0 right-0 bg-yellow-500 dark:bg-yellow-600 text-white text-center py-1 text-xs">
