@@ -848,6 +848,281 @@ function AuthPage({ setCurrentPage }) {
 function HomePage({ currentUser, moodHistory, loadUserData, userStats, darkMode, setCurrentPage }) {
   const [showMoodEntry, setShowMoodEntry] = useState(false);
   const [recommendations, setRecommendations] = useState(null);
+  const [showHabitPopup, setShowHabitPopup] = useState(false);
+  const [selectedHabit, setSelectedHabit] = useState(null);
+
+  // Habit suggestions based on mood and habit type
+  const getHabitSuggestions = (habitName, moodLevel) => {
+    const currentMood = moodLevel || (moodHistory.length > 0 ? moodHistory[0].moodLevel : 3);
+    
+    const suggestions = {
+      'Exercise': {
+        1: { // Very Sad
+          title: 'Gentle Movement for Low Energy',
+          description: 'When feeling down, gentle movement can help boost your mood naturally.',
+          activities: [
+            '🚶‍♀️ Take a 5-10 minute gentle walk outside',
+            '🧘‍♀️ Try 5 minutes of gentle stretching or yoga',
+            '💃 Put on your favorite song and move to the beat',
+            '🏃‍♀️ Do light bodyweight exercises (wall push-ups, seated leg lifts)',
+            '🌳 Spend time in nature, even just sitting outside'
+          ],
+          tip: 'Start small - even 5 minutes of movement can release endorphins and improve your mood.'
+        },
+        2: { // Sad
+          title: 'Mood-Boosting Light Exercise',
+          description: 'Light exercise can help lift your spirits and increase energy levels.',
+          activities: [
+            '🚶‍♀️ Take a 15-20 minute brisk walk',
+            '🧘‍♀️ Follow a 10-15 minute beginner yoga video',
+            '🏃‍♀️ Do a short bodyweight circuit (squats, lunges, push-ups)',
+            '🚴‍♀️ Go for a leisurely bike ride',
+            '💪 Try resistance band exercises'
+          ],
+          tip: 'Focus on activities that feel good rather than intense workouts.'
+        },
+        3: { // Neutral
+          title: 'Balanced Exercise Routine',
+          description: 'Maintain your energy with a well-rounded exercise routine.',
+          activities: [
+            '🏃‍♀️ 20-30 minute jog or run',
+            '💪 Full-body strength training session',
+            '🧘‍♀️ 20-30 minute yoga flow',
+            '🚴‍♀️ Cycling or spinning class',
+            '🏊‍♀️ Swimming laps'
+          ],
+          tip: 'This is a great time to stick to your regular exercise routine or try something new.'
+        },
+        4: { // Good
+          title: 'Energizing Workouts',
+          description: 'Channel your positive energy into more dynamic activities.',
+          activities: [
+            '🏃‍♀️ High-intensity interval training (HIIT)',
+            '💪 Challenging strength training with heavier weights',
+            '🧗‍♀️ Rock climbing or bouldering',
+            '🏐 Play a sport with friends',
+            '💃 Dance workout or Zumba class'
+          ],
+          tip: 'Use this positive energy to challenge yourself and try new activities!'
+        },
+        5: { // Very Happy
+          title: 'High-Energy Activities',
+          description: 'Make the most of your high energy and great mood!',
+          activities: [
+            '🏃‍♀️ Long run or challenging hike',
+            '💪 Intense CrossFit or bootcamp workout',
+            '🏐 Competitive sports or team activities',
+            '💃 High-energy dance class or party',
+            '🧗‍♀️ Adventure activities like rock climbing or martial arts'
+          ],
+          tip: 'This is the perfect time for challenging workouts and trying new adventures!'
+        }
+      },
+      'Water': {
+        1: { // Very Sad
+          title: 'Gentle Hydration for Healing',
+          description: 'Proper hydration supports your body during difficult times.',
+          activities: [
+            '💧 Aim for 6-8 glasses of water today (1.5-2L)',
+            '🍵 Drink warm herbal teas (chamomile, lavender)',
+            '🥤 Add lemon or cucumber to water for flavor',
+            '🧊 Keep a water bottle nearby as a reminder',
+            '⏰ Set gentle reminders every 2 hours to drink water'
+          ],
+          tip: 'Dehydration can worsen low moods. Small, frequent sips are better than forcing large amounts.'
+        },
+        2: { // Sad
+          title: 'Hydration for Better Mood',
+          description: 'Good hydration helps your brain function better and can improve mood.',
+          activities: [
+            '💧 Drink 8-10 glasses of water today (2-2.5L)',
+            '🍵 Try mood-boosting teas (green tea, peppermint)',
+            '🥤 Infuse water with fruits (berries, citrus)',
+            '📱 Use a hydration tracking app',
+            '🥛 Include hydrating foods (watermelon, soup, smoothies)'
+          ],
+          tip: 'Even mild dehydration can affect concentration and mood. Stay consistent!'
+        },
+        3: { // Neutral
+          title: 'Optimal Daily Hydration',
+          description: 'Maintain steady hydration for consistent energy and focus.',
+          activities: [
+            '💧 Drink 8-12 glasses of water today (2-3L)',
+            '🥤 Start your day with a large glass of water',
+            '🍵 Balance water with herbal teas throughout the day',
+            '🏃‍♀️ Drink extra water before, during, and after exercise',
+            '📊 Track your intake to build a consistent habit'
+          ],
+          tip: 'Aim for pale yellow urine as a sign of good hydration.'
+        },
+        4: { // Good
+          title: 'Enhanced Hydration for Peak Performance',
+          description: 'Optimize your hydration to maintain your great energy.',
+          activities: [
+            '💧 Drink 10-12 glasses of water today (2.5-3L)',
+            '🥤 Add electrolytes if you\'re active (coconut water, sports drinks)',
+            '🍵 Try energizing teas (matcha, white tea)',
+            '🧊 Keep ice-cold water for refreshing hydration',
+            '🥛 Include hydrating smoothies with fruits and vegetables'
+          ],
+          tip: 'When you feel good, it\'s easier to maintain healthy habits. Keep it up!'
+        },
+        5: { // Very Happy
+          title: 'Celebration Hydration',
+          description: 'Stay hydrated while enjoying your amazing mood!',
+          activities: [
+            '💧 Drink 12+ glasses of water today (3L+)',
+            '🥤 Create fun flavored water combinations',
+            '🍹 Make healthy mocktails with sparkling water',
+            '🥛 Blend hydrating smoothie bowls',
+            '🧊 Try different temperatures - hot teas, ice water, room temp'
+          ],
+          tip: 'High energy often means more activity - stay extra hydrated to maintain your peak state!'
+        }
+      },
+      'Meditation': {
+        1: { // Very Sad
+          title: 'Gentle Mindfulness for Healing',
+          description: 'Soft, compassionate practices to support you through difficult emotions.',
+          activities: [
+            '🧘‍♀️ 5-10 minutes of loving-kindness meditation',
+            '🌬️ Simple breathing exercises (4-7-8 technique)',
+            '🎵 Listen to guided meditations for sadness or grief',
+            '📝 Practice gentle body scan meditation',
+            '🤗 Self-compassion meditation and positive affirmations'
+          ],
+          tip: 'Be gentle with yourself. If sitting still is hard, try walking meditation instead.'
+        },
+        2: { // Sad
+          title: 'Mood-Lifting Mindfulness',
+          description: 'Practices to help shift your perspective and find inner calm.',
+          activities: [
+            '🧘‍♀️ 10-15 minutes of mindfulness meditation',
+            '🌬️ Breathing exercises with visualization',
+            '🎵 Guided meditations for anxiety or stress relief',
+            '🙏 Gratitude meditation (find 3 things you\'re grateful for)',
+            '🌅 Morning or evening meditation routine'
+          ],
+          tip: 'Focus on acceptance rather than trying to change how you feel right now.'
+        },
+        3: { // Neutral
+          title: 'Balanced Mindfulness Practice',
+          description: 'Maintain mental clarity and emotional balance.',
+          activities: [
+            '🧘‍♀️ 15-20 minutes of regular meditation practice',
+            '🌬️ Alternate nostril breathing for balance',
+            '🎵 Try different meditation styles (mindfulness, concentration)',
+            '📝 Body scan or progressive muscle relaxation',
+            '🌳 Nature meditation or outdoor mindfulness'
+          ],
+          tip: 'This is a great time to establish or deepen your regular practice.'
+        },
+        4: { // Good
+          title: 'Energizing Mindfulness',
+          description: 'Use meditation to enhance and sustain your positive state.',
+          activities: [
+            '🧘‍♀️ 20-30 minutes of focused meditation',
+            '🌬️ Energizing breathwork (bellows breath, rapid breathing)',
+            '🎵 Meditation for creativity and inspiration',
+            '🙏 Gratitude and appreciation meditation',
+            '✨ Visualization meditation for goals and dreams'
+          ],
+          tip: 'Use this positive energy to deepen your practice and set intentions.'
+        },
+        5: { // Very Happy
+          title: 'Joyful Mindfulness Celebration',
+          description: 'Channel your joy into deeper awareness and presence.',
+          activities: [
+            '🧘‍♀️ Extended meditation session (30+ minutes)',
+            '🌬️ Celebratory breathwork and energy practices',
+            '🎵 Meditation on joy, love, and connection',
+            '🙏 Metta (loving-kindness) meditation for all beings',
+            '✨ Creative visualization and manifestation meditation'
+          ],
+          tip: 'This high-energy state is perfect for breakthrough meditation experiences!'
+        }
+      },
+      'Sleep': {
+        1: { // Very Sad
+          title: 'Restorative Sleep for Healing',
+          description: 'Prioritize rest and recovery during difficult times.',
+          activities: [
+            '😴 Aim for 8-9 hours of sleep tonight',
+            '🛏️ Create a cozy, comfortable sleep environment',
+            '📱 Avoid screens 1-2 hours before bed',
+            '🍵 Drink chamomile tea or warm milk before sleep',
+            '📖 Try gentle bedtime reading or soft music'
+          ],
+          tip: 'Depression and sadness often disrupt sleep. Be patient and prioritize rest.'
+        },
+        2: { // Sad
+          title: 'Sleep for Mood Recovery',
+          description: 'Good sleep is essential for emotional regulation and healing.',
+          activities: [
+            '😴 Target 7-8 hours of quality sleep',
+            '🛏️ Establish a calming bedtime routine',
+            '🌙 Keep your bedroom cool, dark, and quiet',
+            '📝 Try journaling before bed to clear your mind',
+            '🧘‍♀️ Practice relaxation techniques before sleep'
+          ],
+          tip: 'Poor sleep can worsen mood. Make sleep a priority for emotional recovery.'
+        },
+        3: { // Neutral
+          title: 'Optimal Sleep Habits',
+          description: 'Maintain consistent sleep patterns for overall well-being.',
+          activities: [
+            '😴 Get 7-8 hours of sleep consistently',
+            '⏰ Keep a regular sleep schedule (same bedtime/wake time)',
+            '🛏️ Optimize your sleep environment (mattress, pillows, temperature)',
+            '📱 Use blue light filters on devices in the evening',
+            '☕ Avoid caffeine 6+ hours before bedtime'
+          ],
+          tip: 'Consistency is key. Try to sleep and wake at the same times every day.'
+        },
+        4: { // Good
+          title: 'Sleep for Peak Performance',
+          description: 'Maintain your positive energy with quality rest.',
+          activities: [
+            '😴 Aim for 7-8 hours of high-quality sleep',
+            '🌅 Wake up naturally or with a sunrise alarm clock',
+            '🛏️ Invest in quality sleep accessories',
+            '📝 Track your sleep patterns to optimize timing',
+            '🧘‍♀️ Practice gratitude or positive visualization before sleep'
+          ],
+          tip: 'Good moods make it easier to maintain healthy sleep habits. Keep it up!'
+        },
+        5: { // Very Happy
+          title: 'Energized Sleep Optimization',
+          description: 'Balance your high energy with restorative sleep.',
+          activities: [
+            '😴 Don\'t sacrifice sleep for activities - aim for 7-8 hours',
+            '🏃‍♀️ Use your energy during the day, but wind down properly',
+            '🛏️ Create an amazing sleep sanctuary',
+            '📱 Track sleep quality and optimize your routine',
+            '🌙 Practice calming activities to transition from high energy to rest'
+          ],
+          tip: 'High energy can make it hard to wind down. Plan your evening routine carefully.'
+        }
+      }
+    };
+
+    return suggestions[habitName]?.[currentMood] || suggestions[habitName]?.[3] || {
+      title: 'Personalized Suggestions',
+      description: 'Keep up the great work with your healthy habits!',
+      activities: ['Continue your current routine', 'Stay consistent with your goals'],
+      tip: 'Consistency is the key to building lasting habits.'
+    };
+  };
+
+  const handleHabitClick = (habit) => {
+    const currentMood = moodHistory.length > 0 ? moodHistory[0].moodLevel : 3;
+    setSelectedHabit({
+      ...habit,
+      suggestions: getHabitSuggestions(habit.name, currentMood),
+      currentMood
+    });
+    setShowHabitPopup(true);
+  };
 
   // Get recommendations based on latest mood
   useEffect(() => {
@@ -960,27 +1235,39 @@ function HomePage({ currentUser, moodHistory, loadUserData, userStats, darkMode,
               .map(habit => {
                 const logged = isHabitLoggedToday(currentUser.userId, habit.id);
                 return (
-                  <button
-                    key={habit.id}
-                    onClick={() => {
-                      if (logged) {
-                        unlogHabit(currentUser.userId, habit.id);
-                      } else {
-                        logHabit(currentUser.userId, habit.id);
-                      }
-                      loadUserData(currentUser.userId);
-                    }}
-                    className={`p-3 rounded-xl transition ${
-                      logged
-                        ? 'bg-green-500 text-white shadow-md'
-                        : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
-                    }`}
-                  >
-                    <div className="text-2xl mb-1">{habit.icon}</div>
-                    <div className={`text-xs ${logged ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`}>
-                      {habit.name}
-                    </div>
-                  </button>
+                  <div key={habit.id} className="relative">
+                    <button
+                      onClick={() => handleHabitClick(habit)}
+                      className={`w-full p-3 rounded-xl transition ${
+                        logged
+                          ? 'bg-green-500 text-white shadow-md'
+                          : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600'
+                      }`}
+                    >
+                      <div className="text-2xl mb-1">{habit.icon}</div>
+                      <div className={`text-xs ${logged ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`}>
+                        {habit.name}
+                      </div>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (logged) {
+                          unlogHabit(currentUser.userId, habit.id);
+                        } else {
+                          logHabit(currentUser.userId, habit.id);
+                        }
+                        loadUserData(currentUser.userId);
+                      }}
+                      className={`absolute -top-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-xs transition ${
+                        logged
+                          ? 'bg-white text-green-500 shadow-md'
+                          : 'bg-indigo-500 text-white shadow-md hover:bg-indigo-600'
+                      }`}
+                    >
+                      {logged ? '✓' : '+'}
+                    </button>
+                  </div>
                 );
               })}
           </div>
@@ -1054,6 +1341,109 @@ function HomePage({ currentUser, moodHistory, loadUserData, userStats, darkMode,
       <div className="text-center text-xs text-gray-400 py-4">
         <p>Powered by SAHA | Developed by AALEKH KUMAR</p>
       </div>
+
+      {/* Habit Suggestions Popup */}
+      {showHabitPopup && selectedHabit && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700">
+            {/* Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white p-6 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="text-4xl">{selectedHabit.icon}</div>
+                  <div>
+                    <h2 className="text-2xl font-bold">{selectedHabit.name} Suggestions</h2>
+                    <p className="text-white/90 text-sm">
+                      Based on your current mood: {['😢 Very Sad', '😟 Sad', '😐 Neutral', '🙂 Good', '😊 Very Happy'][selectedHabit.currentMood - 1]}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowHabitPopup(false)}
+                  className="text-white/80 hover:text-white transition-colors p-2 hover:bg-white/20 rounded-lg"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              {/* Title and Description */}
+              <div className="mb-6">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  {selectedHabit.suggestions.title}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300">
+                  {selectedHabit.suggestions.description}
+                </p>
+              </div>
+
+              {/* Activities List */}
+              <div className="mb-6">
+                <h4 className="font-semibold text-lg text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                  <Sparkles className="text-indigo-500" size={20} />
+                  Recommended Activities
+                </h4>
+                <div className="space-y-3">
+                  {selectedHabit.suggestions.activities.map((activity, index) => (
+                    <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                      <div className="w-6 h-6 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0 mt-0.5">
+                        {index + 1}
+                      </div>
+                      <span className="text-gray-700 dark:text-gray-300">{activity}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Pro Tip */}
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 mb-6">
+                <div className="flex items-start gap-3">
+                  <div className="text-yellow-600 dark:text-yellow-400 mt-0.5">
+                    <Award size={20} />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-1">Pro Tip</h4>
+                    <p className="text-yellow-700 dark:text-yellow-300 text-sm">
+                      {selectedHabit.suggestions.tip}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    const logged = isHabitLoggedToday(currentUser.userId, selectedHabit.id);
+                    if (logged) {
+                      unlogHabit(currentUser.userId, selectedHabit.id);
+                    } else {
+                      logHabit(currentUser.userId, selectedHabit.id);
+                    }
+                    loadUserData(currentUser.userId);
+                    setShowHabitPopup(false);
+                  }}
+                  className={`flex-1 py-3 px-4 rounded-xl font-semibold transition ${
+                    isHabitLoggedToday(currentUser.userId, selectedHabit.id)
+                      ? 'bg-green-500 hover:bg-green-600 text-white'
+                      : 'bg-indigo-500 hover:bg-indigo-600 text-white'
+                  }`}
+                >
+                  {isHabitLoggedToday(currentUser.userId, selectedHabit.id) ? '✓ Completed Today' : 'Mark as Done'}
+                </button>
+                <button
+                  onClick={() => setCurrentPage('habits')}
+                  className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                >
+                  View All Habits
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1828,13 +2218,476 @@ Guidelines:
 }
 
 // ========================================
-// HABITS PAGE - SELF-CARE HABITS TRACKING
+// HABITS PAGE - PROFESSIONAL SELF-CARE TRACKING
 // ========================================
 function HabitsPage({ currentUser, darkMode }) {
   const [habits, setHabits] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showSettings, setShowSettings] = useState(false);
   const [stats, setStats] = useState({});
+  const [selectedHabit, setSelectedHabit] = useState(null);
+  const [showHabitDetail, setShowHabitDetail] = useState(false);
+
+  // Professional habit data with comprehensive information
+  const professionalHabitData = {
+    'Exercise': {
+      icon: '💪',
+      category: 'physical',
+      title: 'Physical Exercise',
+      description: 'Regular physical activity for optimal health and mood',
+      benefits: [
+        'Releases endorphins and improves mood',
+        'Strengthens cardiovascular system',
+        'Builds muscle strength and endurance',
+        'Improves sleep quality',
+        'Boosts energy levels throughout the day'
+      ],
+      dailyGoals: {
+        beginner: '15-20 minutes of light activity',
+        intermediate: '30-45 minutes of moderate exercise',
+        advanced: '45-60 minutes of intense training'
+      },
+      exercises: {
+        cardio: [
+          { name: 'Brisk Walking', duration: '20-30 min', intensity: 'Low', calories: '150-200' },
+          { name: 'Jogging', duration: '20-30 min', intensity: 'Medium', calories: '250-350' },
+          { name: 'Running', duration: '20-30 min', intensity: 'High', calories: '300-450' },
+          { name: 'Cycling', duration: '30-45 min', intensity: 'Medium', calories: '200-400' },
+          { name: 'Swimming', duration: '30-45 min', intensity: 'Medium-High', calories: '250-400' }
+        ],
+        strength: [
+          { name: 'Push-ups', reps: '10-20 reps x 3 sets', target: 'Chest, Arms', equipment: 'None' },
+          { name: 'Squats', reps: '15-25 reps x 3 sets', target: 'Legs, Glutes', equipment: 'None' },
+          { name: 'Planks', reps: '30-60 seconds x 3 sets', target: 'Core', equipment: 'None' },
+          { name: 'Lunges', reps: '10-15 per leg x 3 sets', target: 'Legs, Glutes', equipment: 'None' },
+          { name: 'Burpees', reps: '5-15 reps x 3 sets', target: 'Full Body', equipment: 'None' }
+        ],
+        flexibility: [
+          { name: 'Morning Stretch', duration: '10-15 min', focus: 'Full Body Wake-up' },
+          { name: 'Yoga Flow', duration: '20-30 min', focus: 'Flexibility & Balance' },
+          { name: 'Evening Stretch', duration: '10-15 min', focus: 'Relaxation' },
+          { name: 'Foam Rolling', duration: '10-20 min', focus: 'Muscle Recovery' }
+        ]
+      },
+      tips: [
+        'Start with 5-10 minutes if you\'re a beginner',
+        'Choose activities you enjoy to stay consistent',
+        'Listen to your body and rest when needed',
+        'Gradually increase intensity and duration',
+        'Stay hydrated before, during, and after exercise'
+      ]
+    },
+    'Drink Water': {
+      icon: '💧',
+      category: 'physical',
+      title: 'Hydration Tracking',
+      description: 'Maintain optimal hydration for peak physical and mental performance',
+      benefits: [
+        'Improves brain function and concentration',
+        'Regulates body temperature',
+        'Aids in digestion and nutrient absorption',
+        'Maintains healthy skin',
+        'Supports kidney function and detoxification'
+      ],
+      dailyGoals: {
+        minimum: '8 glasses (2 liters) - Mandatory baseline',
+        recommended: '10-12 glasses (2.5-3 liters) - Optimal hydration',
+        active: '12-16 glasses (3-4 liters) - For active individuals'
+      },
+      hydrationSchedule: [
+        { time: '6:00 AM', amount: '1-2 glasses', note: 'Start your day hydrated' },
+        { time: '8:00 AM', amount: '1 glass', note: 'With breakfast' },
+        { time: '10:00 AM', amount: '1 glass', note: 'Mid-morning boost' },
+        { time: '12:00 PM', amount: '1-2 glasses', note: 'Before and with lunch' },
+        { time: '2:00 PM', amount: '1 glass', note: 'Afternoon energy' },
+        { time: '4:00 PM', amount: '1 glass', note: 'Pre-workout or snack time' },
+        { time: '6:00 PM', amount: '1 glass', note: 'With dinner' },
+        { time: '8:00 PM', amount: '1 glass', note: 'Evening hydration (stop 2hrs before bed)' }
+      ],
+      waterTypes: [
+        { type: 'Plain Water', benefits: 'Pure hydration, no calories', when: 'Anytime' },
+        { type: 'Lemon Water', benefits: 'Vitamin C, aids digestion', when: 'Morning' },
+        { type: 'Herbal Tea', benefits: 'Hydration + herbs benefits', when: 'Evening' },
+        { type: 'Coconut Water', benefits: 'Natural electrolytes', when: 'After exercise' },
+        { type: 'Infused Water', benefits: 'Flavor + vitamins', when: 'Throughout day' }
+      ],
+      tips: [
+        'Keep a water bottle with you at all times',
+        'Set hourly reminders on your phone',
+        'Drink a glass before each meal',
+        'Monitor urine color - aim for pale yellow',
+        'Increase intake during exercise or hot weather'
+      ]
+    },
+    'Meditation': {
+      icon: '🧘‍♀️',
+      category: 'mental',
+      title: 'Mindfulness & Meditation',
+      description: 'Cultivate inner peace, focus, and emotional well-being',
+      benefits: [
+        'Reduces stress and anxiety levels',
+        'Improves focus and concentration',
+        'Enhances emotional regulation',
+        'Promotes better sleep quality',
+        'Increases self-awareness and mindfulness'
+      ],
+      dailyGoals: {
+        beginner: '5-10 minutes of guided meditation',
+        intermediate: '15-20 minutes of focused practice',
+        advanced: '30+ minutes of deep meditation'
+      },
+      techniques: [
+        {
+          name: 'Mindfulness Meditation',
+          duration: '10-20 min',
+          description: 'Focus on present moment awareness',
+          steps: ['Sit comfortably', 'Focus on breath', 'Notice thoughts without judgment', 'Return to breath']
+        },
+        {
+          name: 'Loving-Kindness Meditation',
+          duration: '15-25 min',
+          description: 'Cultivate compassion for self and others',
+          steps: ['Start with self-love', 'Extend to loved ones', 'Include neutral people', 'Embrace difficult relationships']
+        },
+        {
+          name: 'Body Scan',
+          duration: '20-30 min',
+          description: 'Progressive relaxation and awareness',
+          steps: ['Lie down comfortably', 'Start from toes', 'Move up through body', 'Notice sensations']
+        },
+        {
+          name: 'Breathing Exercises',
+          duration: '5-15 min',
+          description: 'Various breath control techniques',
+          steps: ['4-7-8 breathing', 'Box breathing', 'Alternate nostril', 'Deep belly breathing']
+        }
+      ],
+      apps: [
+        { name: 'Headspace', type: 'Guided meditations', price: 'Free/Premium' },
+        { name: 'Calm', type: 'Sleep stories & meditation', price: 'Free/Premium' },
+        { name: 'Insight Timer', type: 'Community & timers', price: 'Free' },
+        { name: 'Ten Percent Happier', type: 'Practical meditation', price: 'Premium' }
+      ],
+      tips: [
+        'Start with just 5 minutes daily',
+        'Find a quiet, comfortable space',
+        'Use guided meditations as a beginner',
+        'Be patient with wandering thoughts',
+        'Consistency matters more than duration'
+      ]
+    },
+    'Good Sleep': {
+      icon: '😴',
+      category: 'physical',
+      title: 'Quality Sleep',
+      description: 'Optimize your sleep for recovery, health, and peak performance',
+      benefits: [
+        'Improves memory consolidation',
+        'Boosts immune system function',
+        'Regulates hormones and metabolism',
+        'Enhances mood and emotional stability',
+        'Increases physical recovery and repair'
+      ],
+      dailyGoals: {
+        adults: '7-9 hours of quality sleep',
+        teens: '8-10 hours of sleep',
+        seniors: '7-8 hours of sleep'
+      },
+      sleepSchedule: [
+        { time: '9:00 PM', activity: 'Begin wind-down routine', note: 'Dim lights, reduce stimulation' },
+        { time: '9:30 PM', activity: 'No more screens', note: 'Blue light disrupts melatonin' },
+        { time: '10:00 PM', activity: 'Reading or relaxation', note: 'Calm activities only' },
+        { time: '10:30 PM', activity: 'Bedtime preparation', note: 'Brush teeth, comfortable clothes' },
+        { time: '11:00 PM', activity: 'Lights out', note: 'Consistent sleep time' },
+        { time: '6:30 AM', activity: 'Natural wake-up', note: '7.5 hours of sleep' }
+      ],
+      sleepHygiene: [
+        { tip: 'Cool Temperature', detail: 'Keep bedroom between 60-67°F (15-19°C)' },
+        { tip: 'Dark Environment', detail: 'Use blackout curtains or eye mask' },
+        { tip: 'Quiet Space', detail: 'Use earplugs or white noise machine' },
+        { tip: 'Comfortable Bedding', detail: 'Invest in quality mattress and pillows' },
+        { tip: 'No Electronics', detail: 'Remove phones, TVs, and tablets from bedroom' }
+      ],
+      bedtimeRoutine: [
+        '🛁 Warm bath or shower (raises then lowers body temperature)',
+        '📖 Read a physical book (avoid screens)',
+        '🧘‍♀️ Light stretching or meditation',
+        '📝 Gratitude journaling',
+        '🍵 Herbal tea (chamomile, valerian root)',
+        '🌙 Progressive muscle relaxation'
+      ],
+      tips: [
+        'Maintain consistent sleep and wake times',
+        'Avoid caffeine 6+ hours before bedtime',
+        'Get morning sunlight exposure',
+        'Exercise regularly, but not close to bedtime',
+        'Create a relaxing bedtime ritual'
+      ]
+    },
+    'Reading': {
+      icon: '📚',
+      category: 'mental',
+      title: 'Daily Reading',
+      description: 'Expand knowledge and improve cognitive function through regular reading',
+      benefits: [
+        'Improves vocabulary and language skills',
+        'Enhances cognitive function and memory',
+        'Reduces stress and promotes relaxation',
+        'Increases knowledge and cultural awareness',
+        'Improves focus and concentration'
+      ],
+      dailyGoals: {
+        beginner: '15-20 minutes of reading daily',
+        intermediate: '30-45 minutes of focused reading',
+        advanced: '60+ minutes across multiple genres'
+      },
+      readingTypes: [
+        { type: 'Fiction', benefits: 'Improves empathy and creativity', when: 'Evening relaxation' },
+        { type: 'Non-fiction', benefits: 'Expands knowledge and skills', when: 'Morning learning' },
+        { type: 'Self-help', benefits: 'Personal development', when: 'Anytime' },
+        { type: 'News/Articles', benefits: 'Stay informed', when: 'Morning routine' },
+        { type: 'Poetry', benefits: 'Language appreciation', when: 'Quiet moments' }
+      ],
+      tips: [
+        'Set aside dedicated reading time daily',
+        'Choose books that genuinely interest you',
+        'Keep a reading journal or notes',
+        'Join a book club for discussion',
+        'Mix different genres for variety'
+      ]
+    },
+    'Journaling': {
+      icon: '✍️',
+      category: 'mental',
+      title: 'Daily Journaling',
+      description: 'Process thoughts and emotions through reflective writing',
+      benefits: [
+        'Improves emotional regulation and self-awareness',
+        'Reduces stress and anxiety levels',
+        'Enhances problem-solving abilities',
+        'Preserves memories and experiences',
+        'Clarifies thoughts and goals'
+      ],
+      dailyGoals: {
+        beginner: '5-10 minutes of free writing',
+        intermediate: '15-20 minutes of structured journaling',
+        advanced: '30+ minutes with multiple techniques'
+      },
+      journalingTypes: [
+        { type: 'Gratitude Journal', description: 'Write 3-5 things you\'re grateful for', when: 'Morning or evening' },
+        { type: 'Stream of Consciousness', description: 'Write continuously without editing', when: 'When feeling overwhelmed' },
+        { type: 'Goal Setting', description: 'Plan and track personal objectives', when: 'Weekly review' },
+        { type: 'Emotional Processing', description: 'Explore and understand feelings', when: 'After difficult experiences' },
+        { type: 'Daily Reflection', description: 'Review the day\'s events and lessons', when: 'Before bed' }
+      ],
+      prompts: [
+        'What am I most grateful for today?',
+        'What challenged me and how did I grow?',
+        'What would make tomorrow even better?',
+        'How am I feeling right now and why?',
+        'What did I learn about myself today?'
+      ],
+      tips: [
+        'Write without judgment or editing',
+        'Be honest and authentic in your entries',
+        'Use prompts when you feel stuck',
+        'Keep your journal private and safe',
+        'Review past entries to see growth'
+      ]
+    },
+    'Gratitude': {
+      icon: '🙏',
+      category: 'mental',
+      title: 'Gratitude Practice',
+      description: 'Cultivate appreciation and positive mindset through gratitude',
+      benefits: [
+        'Increases overall life satisfaction',
+        'Improves relationships and social connections',
+        'Reduces negative emotions and stress',
+        'Enhances sleep quality',
+        'Boosts immune system function'
+      ],
+      dailyGoals: {
+        beginner: 'List 3 things you\'re grateful for',
+        intermediate: 'Write detailed gratitude entries',
+        advanced: 'Practice gratitude meditation and sharing'
+      },
+      practices: [
+        { name: 'Gratitude List', description: 'Write 3-5 specific things you appreciate', time: '5 minutes' },
+        { name: 'Gratitude Letter', description: 'Write to someone who helped you', time: '15 minutes' },
+        { name: 'Gratitude Meditation', description: 'Focus on appreciation during meditation', time: '10-20 minutes' },
+        { name: 'Photo Gratitude', description: 'Take photos of things you appreciate', time: 'Throughout day' },
+        { name: 'Gratitude Sharing', description: 'Express appreciation to others', time: 'Ongoing' }
+      ],
+      tips: [
+        'Be specific rather than general',
+        'Focus on people more than things',
+        'Notice small, everyday blessings',
+        'Express gratitude to others directly',
+        'Practice even when feeling down'
+      ]
+    },
+    'Time in Nature': {
+      icon: '🌳',
+      category: 'physical',
+      title: 'Nature Connection',
+      description: 'Spend time outdoors to restore mental and physical well-being',
+      benefits: [
+        'Reduces stress hormones and blood pressure',
+        'Improves mood and reduces anxiety',
+        'Boosts immune system function',
+        'Enhances creativity and focus',
+        'Increases vitamin D production'
+      ],
+      dailyGoals: {
+        minimum: '15-20 minutes outdoors daily',
+        recommended: '30-60 minutes in natural settings',
+        optimal: '2+ hours in nature weekly'
+      },
+      activities: [
+        { name: 'Walking in Park', duration: '20-30 min', benefits: 'Light exercise + nature' },
+        { name: 'Gardening', duration: '30-60 min', benefits: 'Mindfulness + productivity' },
+        { name: 'Hiking', duration: '1-3 hours', benefits: 'Exercise + adventure' },
+        { name: 'Outdoor Meditation', duration: '10-20 min', benefits: 'Mindfulness + fresh air' },
+        { name: 'Nature Photography', duration: '30-90 min', benefits: 'Creativity + observation' }
+      ],
+      tips: [
+        'Start with your local neighborhood',
+        'Leave devices behind when possible',
+        'Practice mindful observation',
+        'Try different natural settings',
+        'Make it a social activity with others'
+      ]
+    },
+    'Social Connection': {
+      icon: '👥',
+      category: 'social',
+      title: 'Social Relationships',
+      description: 'Nurture meaningful relationships and social bonds',
+      benefits: [
+        'Reduces feelings of loneliness and isolation',
+        'Improves mental health and resilience',
+        'Provides emotional support and understanding',
+        'Increases sense of belonging and purpose',
+        'May increase lifespan and health'
+      ],
+      dailyGoals: {
+        minimum: 'One meaningful interaction daily',
+        recommended: 'Multiple social touchpoints',
+        optimal: 'Deep conversations and shared activities'
+      },
+      activities: [
+        { name: 'Phone/Video Call', duration: '15-30 min', type: 'Remote connection' },
+        { name: 'Coffee with Friend', duration: '1-2 hours', type: 'In-person bonding' },
+        { name: 'Family Dinner', duration: '30-60 min', type: 'Family connection' },
+        { name: 'Group Activity', duration: '1-3 hours', type: 'Shared interests' },
+        { name: 'Community Volunteering', duration: '2-4 hours', type: 'Service connection' }
+      ],
+      tips: [
+        'Quality matters more than quantity',
+        'Be present and listen actively',
+        'Share vulnerabilities appropriately',
+        'Make regular check-ins with loved ones',
+        'Join groups aligned with your interests'
+      ]
+    },
+    'Hobby Time': {
+      icon: '🎨',
+      category: 'mental',
+      title: 'Creative Hobbies',
+      description: 'Engage in enjoyable activities that bring fulfillment and joy',
+      benefits: [
+        'Provides stress relief and relaxation',
+        'Enhances creativity and problem-solving',
+        'Builds sense of accomplishment',
+        'Offers social connection opportunities',
+        'Maintains cognitive function and learning'
+      ],
+      dailyGoals: {
+        minimum: '15-30 minutes of hobby time',
+        recommended: '45-60 minutes of focused engagement',
+        optimal: 'Several hours for deep immersion'
+      },
+      hobbyTypes: [
+        { category: 'Creative', examples: 'Drawing, painting, writing, music, crafts', benefits: 'Self-expression' },
+        { category: 'Physical', examples: 'Sports, dancing, martial arts, yoga', benefits: 'Fitness + fun' },
+        { category: 'Mental', examples: 'Puzzles, chess, learning languages', benefits: 'Cognitive stimulation' },
+        { category: 'Social', examples: 'Board games, team sports, clubs', benefits: 'Connection + enjoyment' },
+        { category: 'Outdoor', examples: 'Gardening, hiking, photography', benefits: 'Nature + activity' }
+      ],
+      tips: [
+        'Choose activities you genuinely enjoy',
+        'Don\'t worry about being perfect',
+        'Set aside dedicated hobby time',
+        'Try new hobbies to discover interests',
+        'Share your hobbies with others'
+      ]
+    },
+    'Healthy Meal': {
+      icon: '🥗',
+      category: 'physical',
+      title: 'Nutritious Eating',
+      description: 'Fuel your body with wholesome, balanced nutrition',
+      benefits: [
+        'Provides sustained energy throughout day',
+        'Supports immune system function',
+        'Improves mood and cognitive function',
+        'Maintains healthy weight and metabolism',
+        'Reduces risk of chronic diseases'
+      ],
+      dailyGoals: {
+        minimum: 'One balanced, home-cooked meal',
+        recommended: 'Majority of meals are nutritious',
+        optimal: 'All meals planned and nutrient-dense'
+      },
+      mealComponents: [
+        { component: 'Vegetables', portion: '1/2 plate', examples: 'Leafy greens, colorful veggies' },
+        { component: 'Lean Protein', portion: '1/4 plate', examples: 'Fish, chicken, beans, tofu' },
+        { component: 'Whole Grains', portion: '1/4 plate', examples: 'Brown rice, quinoa, oats' },
+        { component: 'Healthy Fats', portion: 'Small amount', examples: 'Avocado, nuts, olive oil' },
+        { component: 'Fruits', portion: '1-2 servings', examples: 'Fresh, seasonal varieties' }
+      ],
+      tips: [
+        'Plan meals ahead of time',
+        'Cook at home when possible',
+        'Include variety and color',
+        'Listen to hunger and fullness cues',
+        'Stay hydrated with meals'
+      ]
+    },
+    'Self Care': {
+      icon: '✨',
+      category: 'mental',
+      title: 'Personal Self-Care',
+      description: 'Prioritize your physical and emotional well-being',
+      benefits: [
+        'Reduces stress and prevents burnout',
+        'Improves self-esteem and confidence',
+        'Enhances overall life satisfaction',
+        'Builds resilience for challenges',
+        'Models healthy behavior for others'
+      ],
+      dailyGoals: {
+        minimum: '15-20 minutes of intentional self-care',
+        recommended: '30-45 minutes across multiple activities',
+        optimal: 'Self-care integrated throughout the day'
+      },
+      activities: [
+        { category: 'Physical', examples: 'Bath, skincare, massage, stretching', time: '15-30 min' },
+        { category: 'Mental', examples: 'Meditation, reading, puzzles, music', time: '20-45 min' },
+        { category: 'Emotional', examples: 'Journaling, therapy, boundaries', time: '15-60 min' },
+        { category: 'Social', examples: 'Time with loved ones, saying no', time: 'Variable' },
+        { category: 'Spiritual', examples: 'Prayer, nature, reflection', time: '10-30 min' }
+      ],
+      tips: [
+        'Self-care is not selfish - it\'s necessary',
+        'Find activities that truly restore you',
+        'Schedule self-care like important appointments',
+        'Start small and build consistency',
+        'Adjust self-care based on your needs'
+      ]
+    }
+  };
 
   useEffect(() => {
     if (currentUser) {
@@ -1875,6 +2728,14 @@ function HabitsPage({ currentUser, darkMode }) {
     saveUserHabits(currentUser.userId, updatedHabits);
   };
 
+  const openHabitDetail = (habit) => {
+    const habitData = professionalHabitData[habit.name];
+    if (habitData) {
+      setSelectedHabit({ ...habit, ...habitData });
+      setShowHabitDetail(true);
+    }
+  };
+
   const filteredHabits = selectedCategory === 'all' 
     ? habits.filter(h => h.enabled)
     : habits.filter(h => h.enabled && h.category === selectedCategory);
@@ -1892,33 +2753,53 @@ function HabitsPage({ currentUser, darkMode }) {
   const totalEnabled = habits.filter(h => h.enabled).length;
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
-      {/* Header */}
+    <div className="p-4 max-w-6xl mx-auto">
+      {/* Enhanced Header */}
       <div className="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 dark:from-green-600 dark:via-emerald-600 dark:to-teal-600 rounded-3xl p-6 text-white mb-6 shadow-xl">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-bold mb-1">Self-Care Habits</h1>
-            <p className="text-white/90 text-sm">Build healthy routines, one day at a time</p>
+            <h1 className="text-3xl font-bold mb-2">Professional Habits Tracker</h1>
+            <p className="text-white/90 text-lg">Build lasting habits with expert guidance and detailed tracking</p>
           </div>
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className="bg-white/20 hover:bg-white/30 rounded-xl p-2 transition"
+            className="bg-white/20 hover:bg-white/30 rounded-xl p-3 transition"
           >
-            <Settings size={24} />
+            <Settings size={28} />
           </button>
         </div>
         
-        {/* Progress */}
-        <div className="mt-4 bg-white/20 rounded-xl p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm">Today's Progress</span>
-            <span className="font-bold">{todayCompleted}/{totalEnabled}</span>
+        {/* Enhanced Progress */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+          <div className="bg-white/20 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">Today's Progress</span>
+              <span className="font-bold text-lg">{todayCompleted}/{totalEnabled}</span>
+            </div>
+            <div className="w-full bg-white/20 rounded-full h-3">
+              <div 
+                className="bg-white rounded-full h-3 transition-all duration-500"
+                style={{ width: `${totalEnabled > 0 ? (todayCompleted / totalEnabled) * 100 : 0}%` }}
+              />
+            </div>
           </div>
-          <div className="w-full bg-white/20 rounded-full h-2">
-            <div 
-              className="bg-white rounded-full h-2 transition-all duration-300"
-              style={{ width: `${totalEnabled > 0 ? (todayCompleted / totalEnabled) * 100 : 0}%` }}
-            />
+          
+          <div className="bg-white/20 rounded-xl p-4">
+            <div className="text-sm font-medium mb-1">Weekly Average</div>
+            <div className="text-2xl font-bold">
+              {Object.values(stats).length > 0 
+                ? Math.round(Object.values(stats).reduce((sum, stat) => sum + stat.rate, 0) / Object.values(stats).length)
+                : 0}%
+            </div>
+          </div>
+          
+          <div className="bg-white/20 rounded-xl p-4">
+            <div className="text-sm font-medium mb-1">Best Streak</div>
+            <div className="text-2xl font-bold">
+              {habits.length > 0 
+                ? Math.max(...habits.map(h => getStreak(currentUser.userId, h.id)))
+                : 0} days 🔥
+            </div>
           </div>
         </div>
       </div>
@@ -1926,17 +2807,20 @@ function HabitsPage({ currentUser, darkMode }) {
       {/* Settings Panel */}
       {showSettings && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6 border border-gray-100 dark:border-gray-700">
-          <h3 className="font-semibold text-lg mb-4 text-gray-900 dark:text-white">Manage Habits</h3>
-          <div className="space-y-3">
+          <h3 className="font-semibold text-xl mb-4 text-gray-900 dark:text-white">Manage Your Habits</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {habits.map(habit => (
-              <div key={habit.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{habit.icon}</span>
-                  <span className="font-medium text-gray-900 dark:text-white">{habit.name}</span>
+              <div key={habit.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                <div className="flex items-center gap-4">
+                  <span className="text-3xl">{habit.icon}</span>
+                  <div>
+                    <span className="font-medium text-gray-900 dark:text-white block">{habit.name}</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">{habit.category}</span>
+                  </div>
                 </div>
                 <button
                   onClick={() => toggleHabitEnabled(habit.id)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                  className={`px-6 py-2 rounded-lg text-sm font-medium transition ${
                     habit.enabled
                       ? 'bg-green-500 text-white hover:bg-green-600'
                       : 'bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-400'
@@ -1951,113 +2835,619 @@ function HabitsPage({ currentUser, darkMode }) {
       )}
 
       {/* Category Filter */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+      <div className="flex gap-3 mb-6 overflow-x-auto pb-2">
         {categories.map(cat => (
           <button
             key={cat.id}
             onClick={() => setSelectedCategory(cat.id)}
-            className={`px-4 py-2 rounded-xl font-medium whitespace-nowrap transition ${
+            className={`px-6 py-3 rounded-xl font-medium whitespace-nowrap transition ${
               selectedCategory === cat.id
-                ? 'bg-indigo-500 text-white shadow-lg'
-                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
+                ? 'bg-indigo-500 text-white shadow-lg scale-105'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-indigo-300'
             }`}
           >
-            <span className="mr-2">{cat.icon}</span>
+            <span className="mr-2 text-lg">{cat.icon}</span>
             {cat.name}
           </button>
         ))}
       </div>
 
-      {/* Habits Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+      {/* Professional Habits Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
         {filteredHabits.map(habit => {
           const loggedToday = isHabitLoggedToday(currentUser.userId, habit.id);
           const streak = getStreak(currentUser.userId, habit.id);
           const habitStat = stats[habit.id] || { count: 0, rate: 0 };
+          const habitData = professionalHabitData[habit.name];
 
           return (
-            <button
+            <div
               key={habit.id}
-              onClick={() => toggleHabit(habit.id)}
-              className={`relative p-4 rounded-2xl shadow-lg transition-all transform ${
+              className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg border-2 transition-all duration-300 overflow-hidden ${
                 loggedToday
-                  ? 'bg-gradient-to-br from-green-400 to-emerald-500 scale-105'
-                  : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
-              } border-2 ${
-                loggedToday
-                  ? 'border-green-500'
-                  : 'border-gray-200 dark:border-gray-700'
+                  ? 'border-green-500 shadow-green-500/20'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600'
               }`}
             >
-              {loggedToday && (
-                <div className="absolute top-2 right-2">
-                  <CheckCircle className="text-white" size={20} />
+              {/* Habit Header */}
+              <div className={`p-6 ${loggedToday ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' : 'bg-gray-50 dark:bg-gray-700'}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-4xl">{habit.icon}</div>
+                  {loggedToday && (
+                    <CheckCircle className="text-white" size={24} />
+                  )}
                 </div>
-              )}
-              
-              <div className="text-center">
-                <div className="text-4xl mb-2">{habit.icon}</div>
-                <div className={`font-semibold text-sm mb-1 ${
-                  loggedToday ? 'text-white' : 'text-gray-900 dark:text-white'
-                }`}>
+                <h3 className={`font-bold text-lg mb-1 ${loggedToday ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
                   {habit.name}
-                </div>
-                
-                {streak > 0 && (
-                  <div className={`text-xs ${
-                    loggedToday ? 'text-white/90' : 'text-gray-500 dark:text-gray-400'
-                  }`}>
-                    🔥 {streak} day streak
-                  </div>
-                )}
-                
-                {habitStat.count > 0 && (
-                  <div className={`text-xs mt-1 ${
-                    loggedToday ? 'text-white/80' : 'text-gray-400 dark:text-gray-500'
-                  }`}>
-                    {habitStat.count}/30 days
-                  </div>
-                )}
+                </h3>
+                <p className={`text-sm ${loggedToday ? 'text-white/90' : 'text-gray-600 dark:text-gray-400'}`}>
+                  {habitData?.description || 'Build this healthy habit'}
+                </p>
               </div>
-            </button>
+
+              {/* Habit Stats */}
+              <div className="p-6">
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{streak}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Day Streak</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{habitStat.rate.toFixed(0)}%</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Success Rate</div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="space-y-2">
+                  <button
+                    onClick={() => openHabitDetail(habit)}
+                    className="w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-medium transition flex items-center justify-center gap-2"
+                  >
+                    <Sparkles size={18} />
+                    View Professional Guide
+                  </button>
+                  
+                  <button
+                    onClick={() => toggleHabit(habit.id)}
+                    className={`w-full py-3 px-4 rounded-xl font-medium transition ${
+                      loggedToday
+                        ? 'bg-green-500 hover:bg-green-600 text-white'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    {loggedToday ? '✓ Completed Today' : 'Mark as Complete'}
+                  </button>
+                </div>
+              </div>
+            </div>
           );
         })}
       </div>
 
-      {/* Stats Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
-        <h3 className="font-semibold text-lg mb-4 text-gray-900 dark:text-white">30-Day Statistics</h3>
-        <div className="space-y-3">
-          {Object.entries(stats)
-            .sort((a, b) => b[1].count - a[1].count)
-            .slice(0, 5)
-            .map(([habitId, stat]) => {
-              const habit = habits.find(h => h.id === habitId);
-              if (!habit || !habit.enabled) return null;
-              
-              return (
-                <div key={habitId} className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                  <span className="text-2xl">{habit.icon}</span>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium text-gray-900 dark:text-white">{habit.name}</span>
-                      <span className="text-sm text-gray-600 dark:text-gray-400">{stat.count} days</span>
+      {/* Professional Habit Detail Popup */}
+      {showHabitDetail && selectedHabit && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700">
+            {/* Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white p-6 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="text-5xl">{selectedHabit.icon}</div>
+                  <div>
+                    <h2 className="text-3xl font-bold">{selectedHabit.title}</h2>
+                    <p className="text-white/90 text-lg">{selectedHabit.description}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowHabitDetail(false)}
+                  className="text-white/80 hover:text-white transition-colors p-2 hover:bg-white/20 rounded-lg"
+                >
+                  <X size={28} />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-8">
+              {/* Benefits Section */}
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <Heart className="text-red-500" size={24} />
+                  Health Benefits
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {selectedHabit.benefits?.map((benefit, index) => (
+                    <div key={index} className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl">
+                      <CheckCircle className="text-green-500 flex-shrink-0 mt-0.5" size={18} />
+                      <span className="text-gray-700 dark:text-gray-300">{benefit}</span>
                     </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                      <div
-                        className="bg-indigo-500 rounded-full h-2 transition-all"
-                        style={{ width: `${stat.rate}%` }}
-                      />
+                  ))}
+                </div>
+              </div>
+
+              {/* Daily Goals */}
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <Target className="text-blue-500" size={24} />
+                  Daily Goals & Recommendations
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {Object.entries(selectedHabit.dailyGoals || {}).map(([level, goal]) => (
+                    <div key={level} className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+                      <div className="font-semibold text-blue-800 dark:text-blue-200 capitalize mb-2">{level}</div>
+                      <div className="text-blue-700 dark:text-blue-300 text-sm">{goal}</div>
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      {stat.rate.toFixed(0)}% completion rate
+                  ))}
+                </div>
+              </div>
+
+              {/* Exercise-specific content */}
+              {selectedHabit.name === 'Exercise' && selectedHabit.exercises && (
+                <div className="space-y-6">
+                  {/* Cardio Exercises */}
+                  <div>
+                    <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                      <Activity className="text-red-500" size={20} />
+                      Cardio Exercises
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {selectedHabit.exercises.cardio.map((exercise, index) => (
+                        <div key={index} className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-200 dark:border-red-800">
+                          <div className="font-semibold text-red-800 dark:text-red-200 mb-2">{exercise.name}</div>
+                          <div className="text-sm text-red-700 dark:text-red-300 space-y-1">
+                            <div>⏱️ Duration: {exercise.duration}</div>
+                            <div>🔥 Intensity: {exercise.intensity}</div>
+                            <div>📊 Calories: {exercise.calories}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Strength Exercises */}
+                  <div>
+                    <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                      <Award className="text-orange-500" size={20} />
+                      Strength Training
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {selectedHabit.exercises.strength.map((exercise, index) => (
+                        <div key={index} className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-4 border border-orange-200 dark:border-orange-800">
+                          <div className="font-semibold text-orange-800 dark:text-orange-200 mb-2">{exercise.name}</div>
+                          <div className="text-sm text-orange-700 dark:text-orange-300 space-y-1">
+                            <div>🔢 Reps: {exercise.reps}</div>
+                            <div>🎯 Target: {exercise.target}</div>
+                            <div>🏋️ Equipment: {exercise.equipment}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Flexibility */}
+                  <div>
+                    <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                      <Circle className="text-purple-500" size={20} />
+                      Flexibility & Recovery
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {selectedHabit.exercises.flexibility.map((exercise, index) => (
+                        <div key={index} className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4 border border-purple-200 dark:border-purple-800">
+                          <div className="font-semibold text-purple-800 dark:text-purple-200 mb-2">{exercise.name}</div>
+                          <div className="text-sm text-purple-700 dark:text-purple-300 space-y-1">
+                            <div>⏱️ Duration: {exercise.duration}</div>
+                            <div>🎯 Focus: {exercise.focus}</div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
-              );
-            })}
+              )}
+
+              {/* Water-specific content */}
+              {selectedHabit.name === 'Drink Water' && selectedHabit.hydrationSchedule && (
+                <div className="space-y-6">
+                  {/* Hydration Schedule */}
+                  <div>
+                    <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                      <Clock className="text-blue-500" size={20} />
+                      Daily Hydration Schedule
+                    </h4>
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+                      <div className="space-y-3">
+                        {selectedHabit.hydrationSchedule.map((schedule, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <div className="text-blue-600 dark:text-blue-400 font-mono font-bold">{schedule.time}</div>
+                              <div className="text-gray-700 dark:text-gray-300">{schedule.amount}</div>
+                            </div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{schedule.note}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Water Types */}
+                  <div>
+                    <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                      <Sparkles className="text-cyan-500" size={20} />
+                      Types of Hydration
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {selectedHabit.waterTypes.map((water, index) => (
+                        <div key={index} className="bg-cyan-50 dark:bg-cyan-900/20 rounded-xl p-4 border border-cyan-200 dark:border-cyan-800">
+                          <div className="font-semibold text-cyan-800 dark:text-cyan-200 mb-2">{water.type}</div>
+                          <div className="text-sm text-cyan-700 dark:text-cyan-300 space-y-1">
+                            <div>✨ Benefits: {water.benefits}</div>
+                            <div>⏰ Best Time: {water.when}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Meditation-specific content */}
+              {selectedHabit.name === 'Meditation' && selectedHabit.techniques && (
+                <div className="space-y-6">
+                  {/* Meditation Techniques */}
+                  <div>
+                    <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                      <Circle className="text-indigo-500" size={20} />
+                      Meditation Techniques
+                    </h4>
+                    <div className="space-y-4">
+                      {selectedHabit.techniques.map((technique, index) => (
+                        <div key={index} className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-4 border border-indigo-200 dark:border-indigo-800">
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <div className="font-semibold text-indigo-800 dark:text-indigo-200 text-lg">{technique.name}</div>
+                              <div className="text-indigo-600 dark:text-indigo-400 text-sm">{technique.duration}</div>
+                            </div>
+                          </div>
+                          <div className="text-indigo-700 dark:text-indigo-300 mb-3">{technique.description}</div>
+                          <div className="space-y-2">
+                            <div className="font-medium text-indigo-800 dark:text-indigo-200 text-sm">Steps:</div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              {technique.steps.map((step, stepIndex) => (
+                                <div key={stepIndex} className="flex items-center gap-2 text-sm text-indigo-700 dark:text-indigo-300">
+                                  <div className="w-5 h-5 bg-indigo-200 dark:bg-indigo-800 rounded-full flex items-center justify-center text-xs font-bold">
+                                    {stepIndex + 1}
+                                  </div>
+                                  {step}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Recommended Apps */}
+                  <div>
+                    <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                      <Phone className="text-green-500" size={20} />
+                      Recommended Apps
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {selectedHabit.apps.map((app, index) => (
+                        <div key={index} className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 border border-green-200 dark:border-green-800">
+                          <div className="font-semibold text-green-800 dark:text-green-200 mb-2">{app.name}</div>
+                          <div className="text-sm text-green-700 dark:text-green-300 space-y-1">
+                            <div>📱 Type: {app.type}</div>
+                            <div>💰 Price: {app.price}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Sleep-specific content */}
+              {selectedHabit.name === 'Good Sleep' && selectedHabit.sleepSchedule && (
+                <div className="space-y-6">
+                  {/* Sleep Schedule */}
+                  <div>
+                    <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                      <Moon className="text-purple-500" size={20} />
+                      Optimal Sleep Schedule
+                    </h4>
+                    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4 border border-purple-200 dark:border-purple-800">
+                      <div className="space-y-3">
+                        {selectedHabit.sleepSchedule.map((schedule, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <div className="text-purple-600 dark:text-purple-400 font-mono font-bold">{schedule.time}</div>
+                              <div className="text-gray-700 dark:text-gray-300 font-medium">{schedule.activity}</div>
+                            </div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{schedule.note}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sleep Hygiene */}
+                  <div>
+                    <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                      <Shield className="text-blue-500" size={20} />
+                      Sleep Hygiene Tips
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {selectedHabit.sleepHygiene.map((tip, index) => (
+                        <div key={index} className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+                          <div className="font-semibold text-blue-800 dark:text-blue-200 mb-2">{tip.tip}</div>
+                          <div className="text-sm text-blue-700 dark:text-blue-300">{tip.detail}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Bedtime Routine */}
+                  <div>
+                    <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                      <Sun className="text-yellow-500" size={20} />
+                      Bedtime Routine Ideas
+                    </h4>
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4 border border-yellow-200 dark:border-yellow-800">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {selectedHabit.bedtimeRoutine.map((routine, index) => (
+                          <div key={index} className="flex items-center gap-3 p-2 bg-white dark:bg-gray-800 rounded-lg">
+                            <div className="text-2xl">{routine.split(' ')[0]}</div>
+                            <div className="text-sm text-gray-700 dark:text-gray-300">{routine.substring(2)}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Reading-specific content */}
+              {selectedHabit.name === 'Reading' && selectedHabit.readingTypes && (
+                <div>
+                  <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                    <Activity className="text-indigo-500" size={20} />
+                    Reading Types & Benefits
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {selectedHabit.readingTypes.map((type, index) => (
+                      <div key={index} className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-4 border border-indigo-200 dark:border-indigo-800">
+                        <div className="font-semibold text-indigo-800 dark:text-indigo-200 mb-2">{type.type}</div>
+                        <div className="text-sm text-indigo-700 dark:text-indigo-300 space-y-1">
+                          <div>📚 Benefits: {type.benefits}</div>
+                          <div>⏰ Best Time: {type.when}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Journaling-specific content */}
+              {selectedHabit.name === 'Journaling' && selectedHabit.journalingTypes && (
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                      <Activity className="text-purple-500" size={20} />
+                      Journaling Techniques
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {selectedHabit.journalingTypes.map((type, index) => (
+                        <div key={index} className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4 border border-purple-200 dark:border-purple-800">
+                          <div className="font-semibold text-purple-800 dark:text-purple-200 mb-2">{type.type}</div>
+                          <div className="text-sm text-purple-700 dark:text-purple-300 space-y-1">
+                            <div>📝 {type.description}</div>
+                            <div>⏰ {type.when}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Writing Prompts</h4>
+                    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4 border border-purple-200 dark:border-purple-800">
+                      <div className="space-y-2">
+                        {selectedHabit.prompts.map((prompt, index) => (
+                          <div key={index} className="flex items-start gap-3 p-2 bg-white dark:bg-gray-800 rounded-lg">
+                            <div className="w-6 h-6 bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">
+                              {index + 1}
+                            </div>
+                            <span className="text-sm text-gray-700 dark:text-gray-300">{prompt}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Gratitude-specific content */}
+              {selectedHabit.name === 'Gratitude' && selectedHabit.practices && (
+                <div>
+                  <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                    <Heart className="text-pink-500" size={20} />
+                    Gratitude Practices
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {selectedHabit.practices.map((practice, index) => (
+                      <div key={index} className="bg-pink-50 dark:bg-pink-900/20 rounded-xl p-4 border border-pink-200 dark:border-pink-800">
+                        <div className="font-semibold text-pink-800 dark:text-pink-200 mb-2">{practice.name}</div>
+                        <div className="text-sm text-pink-700 dark:text-pink-300 space-y-1">
+                          <div>📝 {practice.description}</div>
+                          <div>⏱️ Time: {practice.time}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Nature-specific content */}
+              {selectedHabit.name === 'Time in Nature' && selectedHabit.activities && (
+                <div>
+                  <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                    <Activity className="text-green-500" size={20} />
+                    Nature Activities
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {selectedHabit.activities.map((activity, index) => (
+                      <div key={index} className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 border border-green-200 dark:border-green-800">
+                        <div className="font-semibold text-green-800 dark:text-green-200 mb-2">{activity.name}</div>
+                        <div className="text-sm text-green-700 dark:text-green-300 space-y-1">
+                          <div>⏱️ Duration: {activity.duration}</div>
+                          <div>✨ Benefits: {activity.benefits}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Social Connection-specific content */}
+              {selectedHabit.name === 'Social Connection' && selectedHabit.activities && (
+                <div>
+                  <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                    <Users className="text-blue-500" size={20} />
+                    Connection Activities
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {selectedHabit.activities.map((activity, index) => (
+                      <div key={index} className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+                        <div className="font-semibold text-blue-800 dark:text-blue-200 mb-2">{activity.name}</div>
+                        <div className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                          <div>⏱️ Duration: {activity.duration}</div>
+                          <div>🤝 Type: {activity.type}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Hobby-specific content */}
+              {selectedHabit.name === 'Hobby Time' && selectedHabit.hobbyTypes && (
+                <div>
+                  <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                    <Sparkles className="text-orange-500" size={20} />
+                    Hobby Categories
+                  </h4>
+                  <div className="grid grid-cols-1 gap-3">
+                    {selectedHabit.hobbyTypes.map((type, index) => (
+                      <div key={index} className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-4 border border-orange-200 dark:border-orange-800">
+                        <div className="font-semibold text-orange-800 dark:text-orange-200 mb-2">{type.category}</div>
+                        <div className="text-sm text-orange-700 dark:text-orange-300 space-y-1">
+                          <div>🎯 Examples: {type.examples}</div>
+                          <div>✨ Benefits: {type.benefits}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Healthy Meal-specific content */}
+              {selectedHabit.name === 'Healthy Meal' && selectedHabit.mealComponents && (
+                <div>
+                  <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                    <Activity className="text-emerald-500" size={20} />
+                    Balanced Meal Components
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {selectedHabit.mealComponents.map((component, index) => (
+                      <div key={index} className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-4 border border-emerald-200 dark:border-emerald-800">
+                        <div className="font-semibold text-emerald-800 dark:text-emerald-200 mb-2">{component.component}</div>
+                        <div className="text-sm text-emerald-700 dark:text-emerald-300 space-y-1">
+                          <div>🥄 Portion: {component.portion}</div>
+                          <div>🥗 Examples: {component.examples}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Self Care-specific content */}
+              {selectedHabit.name === 'Self Care' && selectedHabit.activities && (
+                <div>
+                  <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                    <Sparkles className="text-rose-500" size={20} />
+                    Self-Care Activities
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {selectedHabit.activities.map((activity, index) => (
+                      <div key={index} className="bg-rose-50 dark:bg-rose-900/20 rounded-xl p-4 border border-rose-200 dark:border-rose-800">
+                        <div className="font-semibold text-rose-800 dark:text-rose-200 mb-2">{activity.category}</div>
+                        <div className="text-sm text-rose-700 dark:text-rose-300 space-y-1">
+                          <div>✨ Examples: {activity.examples}</div>
+                          <div>⏱️ Time: {activity.time}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Pro Tips */}
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <Award className="text-yellow-500" size={24} />
+                  Professional Tips
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {selectedHabit.tips?.map((tip, index) => (
+                    <div key={index} className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4 border border-yellow-200 dark:border-yellow-800">
+                      <div className="flex items-start gap-3">
+                        <div className="w-6 h-6 bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">
+                          {index + 1}
+                        </div>
+                        <span className="text-yellow-800 dark:text-yellow-200">{tip}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={() => {
+                    const logged = isHabitLoggedToday(currentUser.userId, selectedHabit.id);
+                    if (logged) {
+                      unlogHabit(currentUser.userId, selectedHabit.id);
+                    } else {
+                      logHabit(currentUser.userId, selectedHabit.id);
+                    }
+                    const habitStats = getHabitStats(currentUser.userId, 30);
+                    setStats(habitStats);
+                    setShowHabitDetail(false);
+                  }}
+                  className={`flex-1 py-4 px-6 rounded-xl font-semibold text-lg transition ${
+                    isHabitLoggedToday(currentUser.userId, selectedHabit.id)
+                      ? 'bg-green-500 hover:bg-green-600 text-white'
+                      : 'bg-indigo-500 hover:bg-indigo-600 text-white'
+                  }`}
+                >
+                  {isHabitLoggedToday(currentUser.userId, selectedHabit.id) ? '✓ Completed Today' : 'Mark as Complete'}
+                </button>
+                <button
+                  onClick={() => setShowHabitDetail(false)}
+                  className="px-6 py-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
