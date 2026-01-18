@@ -13,7 +13,7 @@ export default function ContactDisplay({ darkMode = false }) {
   // Contact information for FitMood
   const contactInfo = {
     phone: '+91 9582820711',
-    email: 'fitmood55@gmail.com',
+    email: 'info@fitmood.in',
     address: {
       street: 'B Block',
       city: 'Padam Nagar',

@@ -1709,9 +1709,9 @@ function AIChatPage({ currentUser, darkMode }) {
     const API_KEY = import.meta.env.VITE_AI_API_KEY;
     const API_URL = import.meta.env.VITE_AI_API_URL || 'https://api.groq.com/openai/v1/chat/completions';
 
-    // Check if API key is properly set
-    if (!API_KEY) {
-      console.log('🤖 AI API key not set - using smart fallback responses');
+    // Check if API key is properly set and not a placeholder
+    if (!API_KEY || API_KEY === 'your_api_key_here' || API_KEY.includes('your_')) {
+      console.log('🤖 AI API key not configured - using smart fallback responses');
       throw new Error('API key not configured');
     }
 
