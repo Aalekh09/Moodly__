@@ -134,47 +134,13 @@ export class MigrationService {
   }
   
   /**
-   * Prompts existing users to set up a password
+   * Prompts existing users to set up a password (DEPRECATED - Feature Removed)
    * @param {string} userId - User ID
-   * @returns {Promise<boolean>} - True if user needs password setup
+   * @returns {Promise<boolean>} - Always returns false (no password setup needed)
    */
   async promptPasswordSetup(userId) {
-    try {
-      const passwordSetupKey = `${this.newPrefix}password_setup_${userId}`;
-      const setupStatus = localStorage.getItem(passwordSetupKey);
-      
-      if (setupStatus === 'completed') {
-        return false; // No prompt needed
-      }
-      
-      // Check if user exists in new system with password
-      const userKey = `${this.newPrefix}user`;
-      const userData = localStorage.getItem(userKey);
-      
-      if (userData) {
-        const user = JSON.parse(userData);
-        if (user.userId === userId && user.hasPassword) {
-          // Mark as completed
-          localStorage.setItem(passwordSetupKey, 'completed');
-          return false;
-        }
-      }
-      
-      // Check if this is a migrated user (has old data but no password)
-      const migrationComplete = this.isMigrationComplete();
-      if (migrationComplete) {
-        // Check if user has any migrated data
-        const hasMigratedData = this.checkForMigratedUserData(userId);
-        if (hasMigratedData) {
-          return true; // This is a migrated user who needs password setup
-        }
-      }
-      
-      return false; // New user, no prompt needed
-    } catch (error) {
-      console.error('Error checking password setup status:', error);
-      return false; // Default to not showing prompt on error
-    }
+    // Password setup feature has been removed
+    return false;
   }
   
   /**
@@ -217,12 +183,12 @@ export class MigrationService {
   }
   
   /**
-   * Marks password setup as completed for a user
+   * Marks password setup as completed for a user (DEPRECATED - Feature Removed)
    * @param {string} userId - User ID
    */
   markPasswordSetupComplete(userId) {
-    const passwordSetupKey = `${this.newPrefix}password_setup_${userId}`;
-    localStorage.setItem(passwordSetupKey, 'completed');
+    // Password setup feature has been removed - this function does nothing
+    return;
   }
   
   /**

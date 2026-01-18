@@ -10,8 +10,7 @@ const AUTH_ACTIONS = {
   SET_LOADING: 'SET_LOADING',
   SET_USER: 'SET_USER',
   SET_ERROR: 'SET_ERROR',
-  CLEAR_AUTH: 'CLEAR_AUTH',
-  SET_NEEDS_PASSWORD_SETUP: 'SET_NEEDS_PASSWORD_SETUP'
+  CLEAR_AUTH: 'CLEAR_AUTH'
 };
 
 // Authentication reducer
@@ -25,8 +24,7 @@ function authReducer(state, action) {
         user: action.payload, 
         isAuthenticated: !!action.payload,
         loading: false,
-        error: null,
-        needsPasswordSetup: false
+        error: null
       };
     case AUTH_ACTIONS.SET_ERROR:
       return { ...state, error: action.payload, loading: false };
@@ -36,11 +34,8 @@ function authReducer(state, action) {
         user: null, 
         isAuthenticated: false, 
         loading: false, 
-        error: null,
-        needsPasswordSetup: false
+        error: null
       };
-    case AUTH_ACTIONS.SET_NEEDS_PASSWORD_SETUP:
-      return { ...state, needsPasswordSetup: action.payload };
     default:
       return state;
   }
@@ -51,8 +46,7 @@ const initialState = {
   user: null,
   isAuthenticated: false,
   loading: true,
-  error: null,
-  needsPasswordSetup: false
+  error: null
 };
 
 // Authentication provider component
@@ -79,14 +73,6 @@ export function AuthProvider({ children, apiCall }) {
         if (!user.userId || !user.name || !user.email) {
           console.warn('Invalid user data found, clearing session');
           clearAuth();
-          return;
-        }
-        
-        // Check if existing user needs password setup
-        const needsSetup = await migrationService.promptPasswordSetup(user.userId);
-        if (needsSetup) {
-          dispatch({ type: AUTH_ACTIONS.SET_USER, payload: user });
-          dispatch({ type: AUTH_ACTIONS.SET_NEEDS_PASSWORD_SETUP, payload: true });
           return;
         }
         
@@ -185,47 +171,6 @@ export function AuthProvider({ children, apiCall }) {
     }
   };
 
-  const setupPassword = async (password) => {
-    try {
-      dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true });
-      
-      if (!state.user) {
-        throw new Error('No user found for password setup');
-      }
-
-      const authService = new AuthenticationService(apiCall);
-      const result = await authService.register({
-        name: state.user.name,
-        email: state.user.email,
-        phone: state.user.phone,
-        password: password,
-        isPasswordSetup: true
-      });
-
-      if (result.success) {
-        // Mark password setup as complete
-        migrationService.markPasswordSetupComplete(state.user.userId);
-        
-        // Update user data
-        const updatedUser = {
-          ...state.user,
-          hasPassword: true
-        };
-        
-        setStorageItem('user', JSON.stringify(updatedUser));
-        dispatch({ type: AUTH_ACTIONS.SET_USER, payload: updatedUser });
-        return { success: true, user: updatedUser };
-      } else {
-        dispatch({ type: AUTH_ACTIONS.SET_ERROR, payload: result.error });
-        return { success: false, error: result.error };
-      }
-    } catch (error) {
-      const errorMessage = error.message || 'Password setup failed';
-      dispatch({ type: AUTH_ACTIONS.SET_ERROR, payload: errorMessage });
-      return { success: false, error: errorMessage };
-    }
-  };
-
   const requestPasswordReset = async (identifier) => {
     try {
       dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true });
@@ -269,20 +214,14 @@ export function AuthProvider({ children, apiCall }) {
     dispatch({ type: AUTH_ACTIONS.SET_ERROR, payload: null });
   };
 
-  const skipPasswordSetup = () => {
-    dispatch({ type: AUTH_ACTIONS.SET_NEEDS_PASSWORD_SETUP, payload: false });
-  };
-
   const contextValue = {
     ...state,
     login,
     register,
-    setupPassword,
     requestPasswordReset,
     resetPassword,
     logout,
-    clearError,
-    skipPasswordSetup
+    clearError
   };
 
   return (
